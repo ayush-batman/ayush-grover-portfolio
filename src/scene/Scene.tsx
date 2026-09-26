@@ -1,6 +1,6 @@
 import { Suspense, useMemo, useRef, useEffect, type MutableRefObject } from 'react'
 import { useThree, useFrame } from '@react-three/fiber'
-import { ContactShadows } from '@react-three/drei'
+import AyushFigure from './AyushFigure'
 import { EffectComposer, Bloom, DepthOfField, SMAA } from '@react-three/postprocessing'
 import * as THREE from 'three'
 import Env from './Env'
@@ -24,14 +24,12 @@ const CENTER = new THREE.Vector3(0, 1.3, 0)
 // Camera stations: frame -> position + lookAt. Frames: 0 intro, 50*k resume nodes,
 // RESUME_FRAMES+WORKS_ENTRANCE works entrance end, TOTAL_FRAMES works end.
 const STATIONS: { frame: number; pos: [number, number, number]; look: [number, number, number] }[] = [
-  { frame: 0, pos: [0, 2.0, 11.8], look: [0, 1.3, 0] },
-  { frame: 50, pos: [6.8, 1.7, 9.2], look: [0, 1.3, 0] },
-  { frame: 100, pos: [-7.2, 2.8, 8.2], look: [0, 1.4, 0] },
-  { frame: 150, pos: [4.4, 0.5, 8.6], look: [0, 1.2, 0] },
-  { frame: 200, pos: [-4.6, 3.6, 7.4], look: [0, 1.4, 0] },
-  { frame: 250, pos: [0.4, 1.5, 6.2], look: [0, 1.35, 0] },
-  { frame: 300, pos: [0, 2.0, 16.5], look: [0, 1.2, 0] },
-  { frame: 350, pos: [9.5, 2.4, 13.5], look: [0, 1.2, 0] },
+  { frame: 0, pos: [0, 1.55, 7.6], look: [0, 1.35, 0] },
+  { frame: 50, pos: [4.2, 1.5, 5.2], look: [1.5, 1.5, 0] },
+  { frame: 100, pos: [-4.3, 2.1, 4.8], look: [-1.5, 1.45, 0] },
+  { frame: 150, pos: [1.1, 2.15, 3.5], look: [1.6, 1.95, 0] },
+  { frame: 200, pos: [0, 1.3, 11.5], look: [0, 1.1, 0] },
+  { frame: 250, pos: [6.8, 1.7, 9.2], look: [0, 1.1, 0] },
 ]
 
 function GradientBackground() {
@@ -97,33 +95,14 @@ function Lights() {
   )
 }
 
-// The centerpiece: an abstract "answer engine" — a faceted core wrapped in
-// orbit rings with satellite spheres (queries) and warm dust particles.
-function AnswerEngine({ frameRef }: { frameRef: MutableRefObject<number> }) {
-  const core = useRef<THREE.Mesh>(null)
-  const ring1 = useRef<THREE.Mesh>(null)
-  const ring2 = useRef<THREE.Mesh>(null)
-  const ring3 = useRef<THREE.Mesh>(null)
-  const sats = useRef<(THREE.Mesh | null)[]>([])
+// warm dust drifting around the figure
+function Dust() {
   const points = useRef<THREE.Points>(null)
-
-  const SAT_COUNT = 7
-  const satSeed = useMemo(
-    () =>
-      Array.from({ length: SAT_COUNT }, (_, i) => ({
-        ring: i % 3,
-        phase: (i / SAT_COUNT) * Math.PI * 2,
-        speed: 0.25 + ((i * 37) % 10) / 28,
-        size: 0.055 + ((i * 13) % 5) * 0.012,
-      })),
-    []
-  )
-
   const dust = useMemo(() => {
-    const n = 320
+    const n = 260
     const arr = new Float32Array(n * 3)
     for (let i = 0; i < n; i++) {
-      const r = 3.2 + Math.random() * 5.5
+      const r = 3 + Math.random() * 6
       const th = Math.random() * Math.PI * 2
       const ph = Math.acos(2 * Math.random() - 1)
       arr[i * 3] = r * Math.sin(ph) * Math.cos(th)
@@ -134,92 +113,13 @@ function AnswerEngine({ frameRef }: { frameRef: MutableRefObject<number> }) {
     g.setAttribute('position', new THREE.BufferAttribute(arr, 3))
     return g
   }, [])
-
-  useFrame(({ clock }, dt) => {
-    const t = clock.elapsedTime
-    const f = frameRef.current
-    // scroll progress 0..1 across the resume timeline drives ring spread + core facets
-    const p = THREE.MathUtils.clamp(f / RESUME_FRAMES, 0, 1)
-    const spread = 1 + p * 0.35
-
-    if (core.current) {
-      core.current.rotation.y += dt * 0.28
-      core.current.rotation.x = Math.sin(t * 0.3) * 0.12
-      const s = 1 + Math.sin(t * 1.4) * 0.02
-      core.current.scale.setScalar(s)
-    }
-    const rings = [ring1.current, ring2.current, ring3.current]
-    const tilts = [0.42, -0.9, 1.85]
-    rings.forEach((r, i) => {
-      if (!r) return
-      r.rotation.z = tilts[i] + Math.sin(t * 0.22 + i) * 0.08 + p * (i - 1) * 0.22
-      r.rotation.y = t * (0.05 + i * 0.02)
-      r.scale.setScalar(spread + i * 0.02)
-    })
-    satSeed.forEach((sd, i) => {
-      const m = sats.current[i]
-      if (!m) return
-      const radius = (1.45 + sd.ring * 0.42) * spread
-      const a = sd.phase + t * sd.speed
-      const tilt = tilts[sd.ring]
-      // rotate the flat orbit by the ring's z-tilt
-      const x = Math.cos(a) * radius
-      const y0 = Math.sin(a) * radius
-      const y = y0 * Math.cos(tilt)
-      const z = y0 * Math.sin(tilt)
-      m.position.set(x, y, z)
-    })
-    if (points.current) points.current.rotation.y = t * 0.02
+  useFrame(({ clock }) => {
+    if (points.current) points.current.rotation.y = clock.elapsedTime * 0.02
   })
-
   return (
-    <group position={[CENTER.x, CENTER.y, CENTER.z]} scale={1.45}>
-      {/* faceted core */}
-      <mesh ref={core} castShadow>
-        <icosahedronGeometry args={[0.85, 0]} />
-        <meshStandardMaterial
-          color="#e8975d"
-          metalness={0.55}
-          roughness={0.24}
-          flatShading
-          emissive="#5a2c10"
-          emissiveIntensity={0.35}
-        />
-      </mesh>
-      {/* inner glow shell */}
-      <mesh scale={1.18}>
-        <icosahedronGeometry args={[0.85, 1]} />
-        <meshBasicMaterial color="#ffcf9e" transparent opacity={0.06} depthWrite={false} />
-      </mesh>
-      {/* orbit rings */}
-      {[1.45, 1.87, 2.29].map((r, i) => (
-        <mesh key={i} ref={[ring1, ring2, ring3][i] as any}>
-          <torusGeometry args={[r, 0.016, 12, 128]} />
-          <meshStandardMaterial
-            color={i === 1 ? '#c98d54' : '#8a9a7d'}
-            metalness={0.8}
-            roughness={0.3}
-          />
-        </mesh>
-      ))}
-      {/* satellites */}
-      {satSeed.map((sd, i) => (
-        <mesh key={i} ref={(el) => (sats.current[i] = el)} castShadow>
-          <sphereGeometry args={[sd.size, 16, 16]} />
-          <meshStandardMaterial
-            color={i % 3 === 0 ? '#f3e3c3' : '#d9b384'}
-            metalness={0.4}
-            roughness={0.35}
-            emissive="#3d2a14"
-            emissiveIntensity={0.25}
-          />
-        </mesh>
-      ))}
-      {/* dust */}
-      <points ref={points} geometry={dust}>
-        <pointsMaterial color="#f0dcae" size={0.035} sizeAttenuation transparent opacity={0.55} depthWrite={false} />
-      </points>
-    </group>
+    <points ref={points} geometry={dust}>
+      <pointsMaterial color="#f0dcae" size={0.035} sizeAttenuation transparent opacity={0.5} depthWrite={false} />
+    </points>
   )
 }
 
@@ -311,7 +211,7 @@ function Rig({
 
     let frameTarget = THREE.MathUtils.clamp((sTarget + 1) * FRAMES_PER_NODE, 0, RESUME_FRAMES)
     let inWorks = false
-    if (!galleryEl.current) galleryEl.current = document.querySelector('.wk-gallery')
+    if (!galleryEl.current) galleryEl.current = document.querySelector('.wk-gallery') || document.querySelector('.js-story-end')
     if (galleryEl.current) {
       const ih = window.innerHeight
       const rectTop = galleryEl.current.getBoundingClientRect().top
@@ -459,8 +359,8 @@ export default function Scene() {
       <GradientBackground />
       <Suspense fallback={null}>
         <Lights />
-        <AnswerEngine frameRef={frameRef} />
-        <ContactShadows position={[0, -1.6, 0]} opacity={0.42} scale={14} blur={2.6} far={4} color="#1a2413" />
+        <AyushFigure />
+        <Dust />
       </Suspense>
       <Rig focusRef={focusRef} frameRef={frameRef} dofBokehRef={dofBokehRef} dofRangeRef={dofRangeRef} />
       <Post2 focusRef={focusRef} frameRef={frameRef} dofBokehRef={dofBokehRef} dofRangeRef={dofRangeRef} />
