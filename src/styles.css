@@ -67,7 +67,8 @@ canvas {
 
 .content {
   position: relative;
-  z-index: 10;
+  /* above the grain overlay (z100): multiply grain over white text on the light scene kills legibility */
+  z-index: 101;
 }
 
 /* 固定磨砂右轨：上/右/下溢出屏幕外（无可见边），仅左缘柔化淡入场景；
