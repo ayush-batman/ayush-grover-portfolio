@@ -1633,3 +1633,13 @@ canvas {
 .hero-chrome {
   z-index: 101;
 }
+
+/* frosted chip behind hero body copy: white-on-peach needs a real backing */
+.about-body {
+  background: rgba(16, 24, 13, 0.34);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 14px;
+  padding: 0.7em 1.15em;
+  box-shadow: 0 8px 40px rgba(16, 24, 13, 0.18);
+}
