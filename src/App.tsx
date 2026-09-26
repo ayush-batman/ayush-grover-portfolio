@@ -33,8 +33,8 @@ function Hero({ cueOpacity }: { cueOpacity: MotionValue<number> }) {
     target: aboutRef,
     offset: ['start 0.6', 'start start'],
   })
-  const blur = useTransform(scrollYProgress, [0, 0.5], ['blur(0px)', 'blur(16px)'])
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+  const blur = useTransform(scrollYProgress, [0.14, 0.62], ['blur(0px)', 'blur(16px)'])
+  const opacity = useTransform(scrollYProgress, [0.14, 0.62], [1, 0])
   const titleY = useTransform(scrollYProgress, [0, 1], [0, -96])
   const bodyY = useTransform(scrollYProgress, [0, 1], [0, -52])
   const titleSpacing = useTransform(scrollYProgress, [0, 1], ['0.01em', '0.42em'])
