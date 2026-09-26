@@ -1601,3 +1601,20 @@ canvas {
     padding: 16vh 7vw 12vh;
   }
 }
+
+/* hero legibility over the light scene */
+.about-title {
+  text-shadow: 0 2px 34px rgba(24, 34, 18, 0.55);
+}
+.about-body {
+  font-size: clamp(13px, 1.2vw, 18px);
+  line-height: 1.5;
+  text-shadow: 0 1px 16px rgba(24, 34, 18, 0.5);
+}
+.hero-meta {
+  color: rgba(244, 241, 234, 0.62);
+  text-shadow: 0 1px 10px rgba(24, 34, 18, 0.35);
+}
+.hero-meta .hm-name {
+  color: rgba(244, 241, 234, 0.85);
+}

@@ -24,7 +24,7 @@ const CENTER = new THREE.Vector3(0, 1.3, 0)
 // Camera stations: frame -> position + lookAt. Frames: 0 intro, 50*k resume nodes,
 // RESUME_FRAMES+WORKS_ENTRANCE works entrance end, TOTAL_FRAMES works end.
 const STATIONS: { frame: number; pos: [number, number, number]; look: [number, number, number] }[] = [
-  { frame: 0, pos: [0, 2.4, 14.5], look: [0, 1.3, 0] },
+  { frame: 0, pos: [0, 2.0, 11.8], look: [0, 1.3, 0] },
   { frame: 50, pos: [6.8, 1.7, 9.2], look: [0, 1.3, 0] },
   { frame: 100, pos: [-7.2, 2.8, 8.2], look: [0, 1.4, 0] },
   { frame: 150, pos: [4.4, 0.5, 8.6], look: [0, 1.2, 0] },
@@ -35,8 +35,8 @@ const STATIONS: { frame: number; pos: [number, number, number]; look: [number, n
 ]
 
 function GradientBackground() {
-  const top = '#71906c'
-  const bottom = '#e2cfae'
+  const top = '#6b8a60'
+  const bottom = '#dcc094'
   const steep = 1.4
 
   const uniforms = useMemo(
@@ -173,7 +173,7 @@ function AnswerEngine({ frameRef }: { frameRef: MutableRefObject<number> }) {
   })
 
   return (
-    <group position={[CENTER.x, CENTER.y, CENTER.z]}>
+    <group position={[CENTER.x, CENTER.y, CENTER.z]} scale={1.45}>
       {/* faceted core */}
       <mesh ref={core} castShadow>
         <icosahedronGeometry args={[0.85, 0]} />
@@ -406,8 +406,8 @@ function Post2({
     bloomIntensity: 0.6,
     bloomThreshold: 0.82,
     dof: true,
-    startBokeh: 7.4,
-    startRange: 2.0,
+    startBokeh: 3.2,
+    startRange: 2.4,
     focusBokeh: 11.0,
     focusRange: 0.15,
     startBlendFrame: 48,
