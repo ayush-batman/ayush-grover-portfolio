@@ -1622,3 +1622,13 @@ canvas {
   font-weight: 600;
   text-shadow: 0 1px 18px rgba(20, 30, 14, 0.65), 0 0 2px rgba(20, 30, 14, 0.35);
 }
+
+/* lift hero text above the grain overlay: light scene + multiply grain eats white text */
+.about,
+.scroll-cue {
+  position: relative;
+  z-index: 101;
+}
+.hero-chrome {
+  z-index: 101;
+}
